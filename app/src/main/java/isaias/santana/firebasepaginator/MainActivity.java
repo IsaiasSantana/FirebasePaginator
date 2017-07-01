@@ -36,7 +36,13 @@ public final class MainActivity extends AppCompatActivity
         recyclerView.addOnScrollListener(initScrollListener());
 
     }
-
+    
+    @Override
+    protected void onDestroy() 
+    {
+        super.onDestroy();
+        sampleAdapter.removeListener();
+    }
 
     /**
      * Adiciona o listener de scroll para o recycler view.
