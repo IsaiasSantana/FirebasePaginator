@@ -14,7 +14,7 @@ import isaias.santana.firebasepaginatorrecycleradapter.adapter.FirebasePaginator
  *         email: isds.santana@gmail.com
  */
 
-public class SampleAdapter extends FirebasePaginatorRecyclerAdapter<SampleModel,SampleViewHolder>
+public final class SampleAdapter extends FirebasePaginatorRecyclerAdapter<SampleModel,SampleViewHolder>
 {
 
     private static String TAG = SampleAdapter.class.getSimpleName();

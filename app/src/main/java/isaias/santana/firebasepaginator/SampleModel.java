@@ -8,7 +8,7 @@ import com.google.firebase.database.IgnoreExtraProperties;
  */
 
 @IgnoreExtraProperties
-public class SampleModel
+public final class SampleModel
 {
     private String userName;
 

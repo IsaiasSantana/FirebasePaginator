@@ -9,7 +9,7 @@ import android.widget.TextView;
  *         email: isds.santana@gmail.com
  */
 
-public class SampleViewHolder extends RecyclerView.ViewHolder
+public final class SampleViewHolder extends RecyclerView.ViewHolder
 {
 
     //Your fields of view.
