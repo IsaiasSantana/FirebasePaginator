@@ -2,6 +2,7 @@ package isaias.santana.firebasepaginator;
 
 import android.content.Context;
 import android.support.annotation.LayoutRes;
+import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import com.google.firebase.database.Query;
@@ -39,9 +40,7 @@ public final class SampleAdapter extends FirebasePaginatorRecyclerAdapter<Sample
     }
 
     @Override
-    public SampleViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
-    {
-        //with this, paginate the data.
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return super.onCreateViewHolder(parent, viewType);
     }
 
