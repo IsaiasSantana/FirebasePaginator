@@ -6,7 +6,6 @@
     android:paddingLeft="8dp"
     android:paddingRight="8dp"
     android:paddingTop="8dp"
-    android:scrollbars="vertical"
-    android:theme="@style/AppTheme.PopupOverlay">
+    android:scrollbars="vertical">
 
 </android.support.v7.widget.RecyclerView>
