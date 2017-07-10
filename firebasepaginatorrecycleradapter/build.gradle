@@ -1,5 +1,29 @@
 apply plugin: 'com.android.library'
 
+ext {
+    bintrayRepo = 'FirebasePaginator'
+    bintrayName = 'firebasepaginatorrecycleradapter'
+
+    publishedGroupId = 'com.santana.isaias'
+    libraryName = 'FirebasePaginator'
+    artifact = 'firebasepaginatorrecycleradapter'
+
+    libraryDescription = 'Simple library to paginate data with Firebase database.'
+
+    siteUrl = 'https://github.com/IsaiasSantana/FirebasePaginator'
+    gitUrl = 'https://github.com/IsaiasSantana/FirebasePaginator.git'
+
+    libraryVersion = '1.0'
+
+    developerId = 'isds'
+    developerName = 'Isaías Santana'
+    developerEmail = 'isds.santana@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
@@ -32,3 +56,7 @@ dependencies {
     compile 'com.google.firebase:firebase-database:11.0.2'
     testCompile 'junit:junit:4.12'
 }
+
+// Place it at the end of the file
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
