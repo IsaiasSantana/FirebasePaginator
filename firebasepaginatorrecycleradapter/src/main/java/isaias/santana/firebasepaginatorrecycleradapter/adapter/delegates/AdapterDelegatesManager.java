@@ -9,6 +9,9 @@ import android.view.ViewGroup;
 /**
  * @author Isaías Santana on 07/07/17.
  *         email: isds.santana@gmail.com
+ *
+ *         Based in this project: https://github.com/sockeqwe/AdapterDelegates
+ *         site hannesdorfmann:  http://hannesdorfmann.com/android/adapter-delegates
  */
 
 public final class AdapterDelegatesManager<T>
@@ -43,8 +46,6 @@ public final class AdapterDelegatesManager<T>
     /**
      * Removes the adapterDelegate for the given view types.
      *
-     * @param viewType The Viewtype
-     * @return self
      */
     public AdapterDelegatesManager<T> removeDelegate(int viewType) {
         delegates.remove(viewType);
@@ -54,9 +55,8 @@ public final class AdapterDelegatesManager<T>
 
     public int getItemViewType(@NonNull T items, final int position)
     {
-        final int totalItens = delegates.size();
 
-        for(int i = 0; i < totalItens; i++)
+        for(int i = 0; i < delegates.size(); i++)
         {
            final AdapterDelegate<T> delegate = delegates.valueAt(i);
 
@@ -70,7 +70,7 @@ public final class AdapterDelegatesManager<T>
                 "Nenhum AdapterDelegate encontrado para a posição "+position);
     }
 
-    /*  This method must be called in {@link RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}
+    /* This method must be called in {@link RecyclerView.Adapter#onCreateViewHolder(ViewGroup, int)}
    * @param parent the parent
    * @param viewType the view type
    * @return The new created ViewHolder

@@ -72,6 +72,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
     /* Limite padrão de dados recuperado do banco */
     private static final int DEFAULT_LIMIT_PER_PAGE = 21;
 
+    private OnLoadDone onLoadDone;
 
     private FirebasePaginatorRecyclerAdapter(Class<T> modelClass,
                                              @LayoutRes int layout,
@@ -120,6 +121,9 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot)
                     {
+                        if(onLoadDone != null)
+                            onLoadDone.hadSuccessLoad();
+
                         if(dataSnapshot == null) return;
 
                         Deque<DataSnapshot> snapshots;
@@ -156,7 +160,12 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {}
+                    public void onCancelled(DatabaseError databaseError) {
+                        if(onLoadDone != null)
+                        {
+                            onLoadDone.error();
+                        }
+                    }
                 });
 
     }
@@ -293,6 +302,21 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
      * @param position   a posição do elemento na view que está sendo populado.
      */
     abstract protected void populateViewHolder(VH viewHolder, T model, int position);
+
+
+    public void setOnLoadDone(OnLoadDone onLoadDone)
+    {
+        if(onLoadDone == null)
+            throw new NullPointerException("OnLoadDone não pode ser nulo.");
+
+        this.onLoadDone = onLoadDone;
+    }
+
+    public interface OnLoadDone
+    {
+        void hadSuccessLoad();
+        void error();
+    }
 
     /**
      * Classe que é responsável inflar a view do usuário.

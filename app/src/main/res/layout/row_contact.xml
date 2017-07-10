@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/labelFirstLetterRow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_circle"
+        android:textSize="16sp"
+        android:text="I"
+        android:gravity="center_horizontal|center_vertical"
+        android:textColor="@android:color/white"
+        />
+
+    <LinearLayout
+        android:id="@+id/layout_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_toRightOf="@+id/labelFirstLetterRow"
+        android:layout_toEndOf="@id/labelFirstLetterRow"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp">
+
+        <TextView
+            android:id="@+id/tvContactNameRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Isaías Santana"
+            android:textSize="16sp"
+            android:ems="10"
+            android:ellipsize="end"
+            android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/tvContactPhoneRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="(79) 99999-9999"
+            android:textSize="14sp"
+            android:ems="10"
+            android:ellipsize="end"
+            android:textColor="@android:color/black"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

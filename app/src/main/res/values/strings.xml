@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">FirebasePaginator</string>
+    <string name="app_name">ContactList</string>
+    <string name="add_contact">Add contact</string>
+    <string name="list_contact">List contacts</string>
+    <string name="success">Contact created!</string>
+    <string name="error">Failed to create contact</string>
+    <string name="creating_contact">Please wait, creating contact...</string>
+    <string name="contact_name">Contact name</string>
+    <string name="contact_phone">PhoneNumber</string>
 </resources>
