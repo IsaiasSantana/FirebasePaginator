@@ -14,7 +14,7 @@ import isaias.santana.firebasepaginator.adapters.ContactsListAdapter;
 import isaias.santana.firebasepaginator.mvp.presenter.ContactListActivityPresenter;
 import isaias.santana.firebasepaginator.mvp.view.ContactListActivityView;
 
-public class ContactListActivity extends MvpAppCompatActivity implements ContactListActivityView
+public final class ContactListActivity extends MvpAppCompatActivity implements ContactListActivityView
 {
     private ContactsListAdapter contactsListAdapter;
 

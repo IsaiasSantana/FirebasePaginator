@@ -14,7 +14,7 @@ import isaias.santana.firebasepaginator.R;
 import isaias.santana.firebasepaginator.mvp.presenter.MainActivityPresenter;
 import isaias.santana.firebasepaginator.mvp.view.MainActivityView;
 
-public class MainActivity extends MvpAppCompatActivity implements MainActivityView
+public final class MainActivity extends MvpAppCompatActivity implements MainActivityView
 {
     private final ProgressDialogUtil progressDialogUtil = new ProgressDialogUtil();
 

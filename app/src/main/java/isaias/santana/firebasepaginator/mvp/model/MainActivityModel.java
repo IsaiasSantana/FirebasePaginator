@@ -19,7 +19,7 @@ import isaias.santana.firebasepaginator.mvp.presenter.PresenterInterface;
  *         email: isds.santana@gmail.com
  */
 
-public class MainActivityModel
+public final class MainActivityModel
 {
     private final PresenterInterface.ToModel presenter;
     private final DatabaseReference mRef;

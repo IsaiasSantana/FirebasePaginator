@@ -14,7 +14,7 @@ import isaias.santana.firebasepaginator.mvp.view.MainActivityView;
  */
 
 @InjectViewState
-public class MainActivityPresenter extends MvpPresenter<MainActivityView>
+public final class MainActivityPresenter extends MvpPresenter<MainActivityView>
                                    implements PresenterInterface.ToModel,
                                               PresenterInterface.ToView
 {
