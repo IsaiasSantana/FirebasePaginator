@@ -45,7 +45,6 @@ public final class ContactListActivityPresenter extends MvpPresenter<ContactList
                 reference,
                 10/*totalDataPerPage*/,
                 context);
-
         contactsListAdapter.setOnLoadDone(this);
 
        return contactsListAdapter;
