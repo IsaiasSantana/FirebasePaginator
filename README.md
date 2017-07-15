@@ -2,9 +2,8 @@
 Simple library to paginate data with Firebase database.
 
 # Sample app
-![demo](fotos/1.png) ![demo](fotos/2.png) 
-![demo](fotos/3.png) ![demo](fotos/4.png)
-![demo](fotos/5.png) ![demo](fotos/6.png)
+
+
 
 ***
 ## Usage
