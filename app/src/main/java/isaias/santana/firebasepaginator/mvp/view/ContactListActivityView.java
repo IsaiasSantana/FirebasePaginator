@@ -7,7 +7,6 @@ import com.arellomobile.mvp.MvpView;
  *         email: isds.santana@gmail.com
  */
 
-public interface ContactListActivityView extends MvpView
-{
+public interface ContactListActivityView extends MvpView {
     void hideProgressBar();
 }

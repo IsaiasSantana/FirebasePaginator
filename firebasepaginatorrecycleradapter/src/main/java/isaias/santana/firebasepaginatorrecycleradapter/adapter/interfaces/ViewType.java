@@ -9,8 +9,7 @@ package isaias.santana.firebasepaginatorrecycleradapter.adapter.interfaces;
  *         email: isds.santana@gmail.com
  */
 
-public interface ViewType
-{
+public interface ViewType {
     int VIEW_DATA_DATA_SNAPSHOT_ITEM = 0;
     int VIEW_PROGRESS_BAR_ITEM = 1;
 

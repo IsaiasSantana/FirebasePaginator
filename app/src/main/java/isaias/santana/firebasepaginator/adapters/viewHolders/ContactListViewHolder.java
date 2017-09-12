@@ -11,23 +11,27 @@ import isaias.santana.firebasepaginator.R;
  *         email: isds.santana@gmail.com
  */
 
-public final class ContactListViewHolder extends RecyclerView.ViewHolder
-{
+public final class ContactListViewHolder extends RecyclerView.ViewHolder {
     private TextView label;
     private TextView contactName;
     private TextView contactPhone;
 
-    public ContactListViewHolder(View view)
-    {
+    public ContactListViewHolder(View view) {
         super(view);
-        label        = (TextView) view.findViewById(R.id.labelFirstLetterRow);
-        contactName  = (TextView) view.findViewById(R.id.tvContactNameRow);
+        label = (TextView) view.findViewById(R.id.labelFirstLetterRow);
+        contactName = (TextView) view.findViewById(R.id.tvContactNameRow);
         contactPhone = (TextView) view.findViewById(R.id.tvContactPhoneRow);
     }
 
-    public TextView getLabel() { return label; }
+    public TextView getLabel() {
+        return label;
+    }
 
-    public TextView getContactName() { return contactName; }
+    public TextView getContactName() {
+        return contactName;
+    }
 
-    public TextView getContactPhone() { return contactPhone; }
+    public TextView getContactPhone() {
+        return contactPhone;
+    }
 }

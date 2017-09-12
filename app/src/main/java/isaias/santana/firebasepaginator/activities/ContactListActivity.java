@@ -14,16 +14,14 @@ import isaias.santana.firebasepaginator.adapters.ContactsListAdapter;
 import isaias.santana.firebasepaginator.mvp.presenter.ContactListActivityPresenter;
 import isaias.santana.firebasepaginator.mvp.view.ContactListActivityView;
 
-public final class ContactListActivity extends MvpAppCompatActivity implements ContactListActivityView
-{
+public final class ContactListActivity extends MvpAppCompatActivity implements ContactListActivityView {
     private ContactsListAdapter contactsListAdapter;
 
     @InjectPresenter
     ContactListActivityPresenter presenter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
 
@@ -33,26 +31,23 @@ public final class ContactListActivity extends MvpAppCompatActivity implements C
 
         final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         final LinearLayoutManager llm =
-                                  new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-
+                new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
 
         recyclerView.setLayoutManager(llm);
-        recyclerView.addItemDecoration(new DividerItemDecoration(this,DividerItemDecoration.VERTICAL));
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setHasFixedSize(false);
         recyclerView.setAdapter(contactsListAdapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy)
-            {
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                final int totalItemCount =  llm.getItemCount();
+                final int totalItemCount = llm.getItemCount();
                 final int lastVisibleItem = llm.findLastCompletelyVisibleItemPosition();
 
 
-                if(!contactsListAdapter.isLoading() && totalItemCount <= (lastVisibleItem + 2))
-                {
+                if (!contactsListAdapter.isLoading() && totalItemCount <= (lastVisibleItem + 2)) {
                     contactsListAdapter.loadMore();
                 }
             }
@@ -61,8 +56,7 @@ public final class ContactListActivity extends MvpAppCompatActivity implements C
 
 
     @Override
-    public void hideProgressBar()
-    {
+    public void hideProgressBar() {
         findViewById(R.id.my_progress_bar).setVisibility(View.GONE);
     }
 

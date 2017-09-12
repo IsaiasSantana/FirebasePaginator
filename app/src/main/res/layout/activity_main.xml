@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/contact_name"
-            android:inputType="text"/>
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/contactPhone"
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/contact_phone"
-            android:inputType="phone"/>
+            android:inputType="phone" />
     </LinearLayout>
 
     <Button
@@ -34,13 +34,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/add_contact"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_gravity="center_horizontal" />
 
     <Button
         android:id="@+id/btnGotoActivityList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/list_contact"
-        android:layout_gravity="center|center_horizontal"/>
+        android:layout_gravity="center|center_horizontal" />
 
 </LinearLayout>

@@ -17,8 +17,7 @@ import isaias.santana.firebasepaginatorrecycleradapter.adapter.FirebasePaginator
  *         email: isds.santana@gmail.com
  */
 
-public final class ContactsListAdapter extends FirebasePaginatorRecyclerAdapter<Contact,ContactListViewHolder>
-{
+public final class ContactsListAdapter extends FirebasePaginatorRecyclerAdapter<Contact, ContactListViewHolder> {
     private final Context context;
 
     /**
@@ -33,8 +32,7 @@ public final class ContactsListAdapter extends FirebasePaginatorRecyclerAdapter<
                                Class<ContactListViewHolder> viewHolderClass,
                                Query query,
                                int totalDataPerPage,
-                               Context context)
-    {
+                               Context context) {
         super(modelClass, layout, viewHolderClass, query, totalDataPerPage);
         this.context = context;
     }
@@ -42,12 +40,11 @@ public final class ContactsListAdapter extends FirebasePaginatorRecyclerAdapter<
     @Override
     protected void populateViewHolder(ContactListViewHolder viewHolder,
                                       Contact model,
-                                      int position)
-    {
+                                      int position) {
         final int color = getRandomMaterialColor("400");
 
         viewHolder.getLabel().setText(Character.toString(model.getContactName().toUpperCase().charAt(0)));
-        DrawableCompat.setTint(DrawableCompat.wrap(viewHolder.getLabel().getBackground()),color);
+        DrawableCompat.setTint(DrawableCompat.wrap(viewHolder.getLabel().getBackground()), color);
         viewHolder.getContactName().setText(model.getContactName());
         viewHolder.getContactPhone().setText(model.getPhoneNumber());
     }
@@ -58,7 +55,7 @@ public final class ContactsListAdapter extends FirebasePaginatorRecyclerAdapter<
     private int getRandomMaterialColor(String typeColor) {
         int returnColor = Color.GRAY;
         int arrayId = context.getResources()
-                             .getIdentifier("mdcolor_" + typeColor, "array", context.getPackageName());
+                .getIdentifier("mdcolor_" + typeColor, "array", context.getPackageName());
 
         if (arrayId != 0) {
             TypedArray colors = context.getResources().obtainTypedArray(arrayId);

@@ -10,23 +10,19 @@ import isaias.santana.firebasepaginatorrecycleradapter.adapter.interfaces.ViewTy
  *         email: isds.santana@gmail.com
  */
 
-public final class ItemFirebasePaginatorAdapter implements ViewType
-{
+public final class ItemFirebasePaginatorAdapter implements ViewType {
     private final DataSnapshot dataSnapshot;
 
-    public ItemFirebasePaginatorAdapter(DataSnapshot dataSnapshot)
-    {
+    public ItemFirebasePaginatorAdapter(DataSnapshot dataSnapshot) {
         this.dataSnapshot = dataSnapshot;
     }
 
-    public DataSnapshot getDataSnapshot()
-    {
+    public DataSnapshot getDataSnapshot() {
         return dataSnapshot;
     }
 
     @Override
-    public int getViewType()
-    {
+    public int getViewType() {
         return ViewType.VIEW_DATA_DATA_SNAPSHOT_ITEM;
     }
 }

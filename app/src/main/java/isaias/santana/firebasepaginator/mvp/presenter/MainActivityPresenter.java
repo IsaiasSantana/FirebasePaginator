@@ -15,19 +15,16 @@ import isaias.santana.firebasepaginator.mvp.view.MainActivityView;
 
 @InjectViewState
 public final class MainActivityPresenter extends MvpPresenter<MainActivityView>
-                                   implements PresenterInterface.ToModel,
-                                              PresenterInterface.ToView
-{
+        implements PresenterInterface.ToModel,
+        PresenterInterface.ToView {
     private final MainActivityModel model;
 
-    public MainActivityPresenter()
-    {
+    public MainActivityPresenter() {
         model = new MainActivityModel(this);
     }
 
     @Override
-    public void showMessage(int message)
-    {
+    public void showMessage(int message) {
         getViewState().showToast(message);
         getViewState().clearFields();
     }
@@ -38,12 +35,13 @@ public final class MainActivityPresenter extends MvpPresenter<MainActivityView>
     }
 
     @Override
-    public void hideProgressDialog() { getViewState().hideProgressDialog(); }
+    public void hideProgressDialog() {
+        getViewState().hideProgressDialog();
+    }
 
     @Override
-    public void addContact(String contactName, String phoneNumber)
-    {
-        final Contact contact = new Contact(contactName,phoneNumber);
+    public void addContact(String contactName, String phoneNumber) {
+        final Contact contact = new Contact(contactName, phoneNumber);
 
         model.createContact(contact);
     }

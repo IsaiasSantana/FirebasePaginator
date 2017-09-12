@@ -5,7 +5,6 @@ package isaias.santana.firebasepaginator.utils;
  *         email: isds.santana@gmail.com
  */
 
-public final class Constants
-{
+public final class Constants {
     public static final String NODE_CONTACTS = "contactsList";
 }

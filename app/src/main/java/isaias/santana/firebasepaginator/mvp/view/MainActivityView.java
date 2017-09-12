@@ -7,10 +7,12 @@ import com.arellomobile.mvp.MvpView;
  *         email: isds.santana@gmail.com
  */
 
-public interface MainActivityView extends MvpView
-{
+public interface MainActivityView extends MvpView {
     void showToast(int message);
+
     void showProgressDialog(int message);
+
     void hideProgressDialog();
+
     void clearFields();
 }

@@ -8,11 +8,9 @@ import isaias.santana.firebasepaginatorrecycleradapter.adapter.interfaces.ViewTy
  *         email: isds.santana@gmail.com
  */
 
-public final class ProgressBarItem implements ViewType
-{
+public final class ProgressBarItem implements ViewType {
     @Override
-    public int getViewType()
-    {
+    public int getViewType() {
         return ViewType.VIEW_PROGRESS_BAR_ITEM;
     }
 }

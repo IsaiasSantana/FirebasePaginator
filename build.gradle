@@ -18,8 +18,11 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-        maven{
+        maven {
             url 'https://dl.bintray.com/isds/FirebasePaginator'
+        }
+        maven {
+            url "https://maven.google.com"
         }
     }
 }

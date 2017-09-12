@@ -8,14 +8,11 @@ import android.content.Context;
  *         email: isds.santana@gmail.com
  */
 
-public final class ProgressDialogUtil
-{
+public final class ProgressDialogUtil {
     private ProgressDialog progressDialog;
 
-    public final void showProgressDialog(Context context, int mensagem)
-    {
-        if(progressDialog == null)
-        {
+    public final void showProgressDialog(Context context, int mensagem) {
+        if (progressDialog == null) {
             progressDialog = new ProgressDialog(context);
             progressDialog.setMessage(context.getResources().getString(mensagem));
             progressDialog.setIndeterminate(true);
@@ -24,10 +21,8 @@ public final class ProgressDialogUtil
         progressDialog.show();
     }
 
-    public final void hideProgressDialog()
-    {
-        if(progressDialog != null && progressDialog.isShowing())
-        {
+    public final void hideProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
     }

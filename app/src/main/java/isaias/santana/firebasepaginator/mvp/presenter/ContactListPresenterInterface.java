@@ -5,15 +5,12 @@ package isaias.santana.firebasepaginator.mvp.presenter;
  *         email: isds.santana@gmail.com
  */
 
-public interface ContactListPresenterInterface
-{
-    interface ToModel
-    {
+public interface ContactListPresenterInterface {
+    interface ToModel {
 
     }
 
-    interface ToView
-    {
+    interface ToView {
 
     }
 }
