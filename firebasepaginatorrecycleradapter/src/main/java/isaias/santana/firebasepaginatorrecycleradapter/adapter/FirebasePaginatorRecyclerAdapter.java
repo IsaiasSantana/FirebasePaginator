@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
@@ -39,6 +40,16 @@ import isaias.santana.firebasepaginatorrecycleradapter.adapter.itens.ProgressBar
 public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter {
     private static final String TAG = FirebasePaginatorRecyclerAdapter.class.getSimpleName();
+
+    /* Limite padrão de dados recuperado do banco */
+    private static final int DEFAULT_LIMIT_PER_PAGE = 21;
+
+    /* número total de dados que será buscado no banco por vez */
+    private final int totalDataPerPage;
+
+    private final ChildEventListener mChildEventListener;
+
+    private final ArrayList<ChildEventListener> mChildEventListeners = new ArrayList<>();
 
     /* Layout que será inflado */
     protected int layout;
@@ -72,18 +83,16 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
     /* Flag que indica para remover um item quando esse é removido do Firebase */
     private boolean isToRemoveItemRemovedFromFirebase;
 
-    /* número total de dados que será buscado no banco por vez */
-    private final int totalDataPerPage;
+    private boolean isInitialLoad;
 
-    /* Limite padrão de dados recuperado do banco */
-    private static final int DEFAULT_LIMIT_PER_PAGE = 21;
+    private boolean isAscendingOrder;
 
     private OnLoadDone onLoadDone;
 
     private FirebasePaginatorRecyclerAdapter(Class<T> modelClass,
                                              @LayoutRes int layout,
                                              Class<VH> viewHolderClass,
-                                             int totalDataPerPage) {
+                                             final int totalDataPerPage) {
         this.modelClass = modelClass;
         this.layout = layout;
         this.viewHolderClass = viewHolderClass;
@@ -94,11 +103,60 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
             this.totalDataPerPage = totalDataPerPage + 1;
 
         isLoading = false;
+        isInitialLoad = true;
         nextKey = "";
         previewsKey = "";
         manager = new AdapterDelegatesManager<>();
         manager.addDelegate(new ProgressBarDelegate(), ViewType.VIEW_PROGRESS_BAR_ITEM)
                 .addDelegate(new UserAdapterDelegate(), ViewType.VIEW_DATA_DATA_SNAPSHOT_ITEM);
+
+        mChildEventListener = new ChildEventListener() {
+            int contador = 0;
+
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                if (isInitialLoad && !isAscendingOrder) {
+                    viewTypes.add(new ItemFirebasePaginatorAdapter(dataSnapshot));
+                    notifyItemInserted(viewTypes.size() - 1);
+                    nextKey = dataSnapshot.getKey();
+                    contador += 1;
+                    if (contador == totalDataPerPage) {
+                        isInitialLoad = false;
+                    }
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                final int index = getIndexKey(dataSnapshot.getKey());
+                if (index != -1) {
+                    viewTypes.set(index, new ItemFirebasePaginatorAdapter(dataSnapshot));
+                    notifyItemChanged(index);
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                final int index = getIndexKey(dataSnapshot.getKey());
+                if (index != -1) {
+                    viewTypes.remove(index);
+                    notifyItemRemoved(index);
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                //Ignored for now.
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                if (onLoadDone != null) {
+                    onLoadDone.error();
+                }
+            }
+        };
     }
 
     /**
@@ -112,60 +170,71 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                                             @LayoutRes int layout,
                                             Class<VH> viewHolderClass,
                                             Query query,
-                                            final int totalDataPerPage) {
+                                            final int totalDataPerPage,
+                                            final boolean isAscendingOrder) {
+
         this(modelClass, layout, viewHolderClass, totalDataPerPage);
+        if (query == null) {
+            throw new NullPointerException("The query is null");
+        }
+
         this.queryListener = query;
+        this.isAscendingOrder = isAscendingOrder;
+        this.isToAddNewItemAddedToFirebase = false;
+        this.isToRemoveItemRemovedFromFirebase = false;
+        if (isAscendingOrder) {
+            //Get the first data.
+            queryListener.limitToLast(this.totalDataPerPage)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (onLoadDone != null) {
+                                onLoadDone.hadSuccessLoad();
+                            }
 
-        Log.d(TAG, "totalDataPerPage " + this.totalDataPerPage);
+                            if (dataSnapshot == null) return;
 
-        //Get the first data.
-        query.limitToLast(this.totalDataPerPage)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (onLoadDone != null) {
-                            onLoadDone.hadSuccessLoad();
+                            Deque<DataSnapshot> snapshots;
+                            snapshots = new ArrayDeque<>(FirebasePaginatorRecyclerAdapter.this.totalDataPerPage);
+
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                snapshots.addFirst(snapshot);
+                            }
+
+                            if (snapshots.isEmpty()) {
+                                return;
+                            }
+
+                            // next key to load more data.
+                            nextKey = snapshots.getLast().getKey();
+
+                            //ASCENDIG order
+                            while (!snapshots.isEmpty()) {
+                                DataSnapshot snapshot = snapshots.removeFirst();
+                                FirebasePaginatorRecyclerAdapter.this
+                                        .viewTypes
+                                        .add(new ItemFirebasePaginatorAdapter(snapshot));
+
+                                notifyItemInserted(FirebasePaginatorRecyclerAdapter.this.viewTypes.size() - 1);
+
+                                Log.d(TAG, snapshot.getKey());
+                            }
                         }
 
-                        if (dataSnapshot == null) return;
-
-                        Deque<DataSnapshot> snapshots;
-                        snapshots = new ArrayDeque<>(FirebasePaginatorRecyclerAdapter.this.totalDataPerPage);
-
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            snapshots.addFirst(snapshot);
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            if (onLoadDone != null) {
+                                onLoadDone.error();
+                            }
                         }
+                    });   //[End-Listener]
+               queryListener.limitToLast(totalDataPerPage).addChildEventListener(mChildEventListener);
+               mChildEventListeners.add(mChildEventListener);
 
-                        if (snapshots.isEmpty()) {
-                            return;
-                        }
-
-                        // next key to load more data.
-                        nextKey = snapshots.getLast().getKey();
-
-                        Log.d(TAG, "initial load. nextKey: " + nextKey);
-
-
-                        //ASCENDIG order
-                        while (!snapshots.isEmpty()) {
-                            DataSnapshot snapshot = snapshots.removeFirst();
-                            FirebasePaginatorRecyclerAdapter.this
-                                    .viewTypes
-                                    .add(new ItemFirebasePaginatorAdapter(snapshot));
-
-                            notifyItemInserted(FirebasePaginatorRecyclerAdapter.this.viewTypes.size() - 1);
-
-                            Log.d(TAG, snapshot.getKey());
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        if (onLoadDone != null) {
-                            onLoadDone.error();
-                        }
-                    }
-                });
+        } else {
+            queryListener.limitToFirst(totalDataPerPage).addChildEventListener(mChildEventListener);
+            mChildEventListeners.add(mChildEventListener);
+        }
 
     }
 
@@ -200,10 +269,13 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                 .hashCode();
     }
 
+    /**
+     * Load more data if it exist.
+     */
     public void loadMore() {
 
         if (!isLoading && !previewsKey.equals(nextKey)) {
-            Log.d(TAG, "loadMore() tem mais dados");
+
             isLoading = true;
             previewsKey = nextKey;
 
@@ -215,73 +287,58 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                     notifyItemInserted(viewTypes.size() - 1);
                 }
             });
+            if (isAscendingOrder) {
 
-            queryListener
-                    .orderByKey()
-                    .endAt(nextKey)
-                    .limitToLast(totalDataPerPage)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            //Remove o progress bar antes de inserir.
-                            final int lastPosition = viewTypes.size() - 1;
-                            viewTypes.remove(lastPosition);
-                            notifyItemRemoved(lastPosition);
+                final ChildEventListener listener = queryListener
+                        .orderByKey()
+                        .endAt(nextKey)
+                        .limitToLast(totalDataPerPage)
+                        .addChildEventListener(getListenerForAscendingOrder());
 
-                            if (dataSnapshot == null) return;
+                mChildEventListeners.add(listener);
 
-                            final Deque<DataSnapshot> snapshots;
-                            snapshots = new ArrayDeque<>(
-                                    FirebasePaginatorRecyclerAdapter.this.totalDataPerPage);
+            } else {
+                final ChildEventListener listener = queryListener
+                        .orderByKey()
+                        .startAt(nextKey.equals("") ? null : nextKey)
+                        .limitToFirst(totalDataPerPage)
+                        .addChildEventListener(getListenerForDescendingOrder());
 
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                if (nextKey.equals(snapshot.getKey()))
-                                    continue;
-
-                                snapshots.addFirst(snapshot);
-                            }
-
-                            if (snapshots.isEmpty()) {
-                                Log.d(TAG, "Deque vazio. Fim dos dados.");
-                                isLoading = false;
-                                return;
-                            }
-
-                            // next key to load more data.
-                            nextKey = snapshots.getLast().getKey();
-                            Log.d(TAG, "loadMore() nextKey: " + nextKey);
-
-                            //ASCENDIG order
-                            while (!snapshots.isEmpty()) {
-                                DataSnapshot snapshot = snapshots.removeFirst();
-                                FirebasePaginatorRecyclerAdapter.this
-                                        .viewTypes
-                                        .add(new ItemFirebasePaginatorAdapter(snapshot));
-
-                                notifyItemInserted(
-                                        FirebasePaginatorRecyclerAdapter.this.viewTypes.size() - 1);
-
-                                Log.d(TAG, snapshot.getKey());
-                            }
-
-                            isLoading = false;
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                        }
-
-                    }); //[End-Listener]
+                mChildEventListeners.add(listener);
+            }
 
         }//[End-IF]
     }
 
 
+    /**
+     * Check if is loading more data.
+     */
     public boolean isLoading() {
         return isLoading;
     }
 
     /**
+     * Remove all childEventListener.
+     */
+    public void removeListeners() {
+        for (ChildEventListener cel : mChildEventListeners) {
+            if (queryListener != null && cel != null) {
+                queryListener.removeEventListener(cel);
+            }
+        }
+    }
+
+    public void setToAddNewItemAddedToFirebase(boolean toAddNewItemAddedToFirebase) {
+        isToAddNewItemAddedToFirebase = toAddNewItemAddedToFirebase;
+    }
+
+    public void setToRemoveItemRemovedFromFirebase(boolean toRemoveItemRemovedFromFirebase) {
+        isToRemoveItemRemovedFromFirebase = toRemoveItemRemovedFromFirebase;
+    }
+
+    /**
+     * Portuguese Brazilian:
      * Implemente este método para popular os dados que serão exibidos. Toda vez que um evento
      * ocorrer em uma dada localização no Firebase esse método será chamado para cada item que for
      * modificado. O comportamento padrão é apenas chamar este método toda vez que um dado for
@@ -293,7 +350,11 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
      */
     abstract protected void populateViewHolder(VH viewHolder, T model, int position);
 
-
+    /**
+     * Util to check if the data was loaded.
+     *
+     * @param onLoadDone the listener to check.
+     */
     public void setOnLoadDone(OnLoadDone onLoadDone) {
         if (onLoadDone == null)
             throw new NullPointerException("OnLoadDone não pode ser nulo.");
@@ -301,14 +362,201 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
         this.onLoadDone = onLoadDone;
     }
 
+    private int getIndexKey(String searchKey) {
+        int contador = 0;
+        for (ViewType vt : viewTypes) {
+            if (((ItemFirebasePaginatorAdapter) vt).getDataSnapshot().getKey().equals(searchKey)) {
+                return contador;
+            } else {
+                contador += 1;
+            }
+        }
+        return -1;
+    }
+
+    private ChildEventListener getListenerForAscendingOrder() {
+        return new ChildEventListener() {
+            final ArrayDeque<DataSnapshot> snapshots = new ArrayDeque<>(totalDataPerPage);
+            int counter = 0;
+
+            @Override
+            public void onChildAdded(final DataSnapshot dataSnapshot, String s) {
+                Log.d(TAG, "getListenerForAscendingOrder() -> isToAdd: out " + dataSnapshot.getKey());
+                Log.d(TAG, "isLoading: " + isLoading + " isToAddItemAddedToFirebase: " + isToAddNewItemAddedToFirebase);
+               if (!isLoading && isToAddNewItemAddedToFirebase) {
+                    Log.d(TAG, "isToAdd inside: " + dataSnapshot.getKey());
+                   new Handler().post(new Runnable() {
+                       @Override
+                       public void run() {
+                           viewTypes.add(new ItemFirebasePaginatorAdapter(dataSnapshot));
+                           notifyItemInserted(viewTypes.size() - 1);
+                       }
+                   });
+
+                    return;
+                }
+
+                if (counter == 0) {
+                    counter += 1;
+                    snapshots.addFirst(dataSnapshot);
+                    nextKey = dataSnapshot.getKey();
+                    final int lastPosition = viewTypes.size() - 1;
+                    viewTypes.remove(lastPosition);
+                    notifyItemRemoved(lastPosition);
+                } else {
+                    counter += 1;
+                    snapshots.addFirst(dataSnapshot);
+                }
+
+                if (counter == totalDataPerPage) {
+                    while (!snapshots.isEmpty()) {
+                        final DataSnapshot snapshot = snapshots.removeFirst();
+                        if (snapshot.getKey().equals(previewsKey)) {
+                            continue;
+                        }
+                        FirebasePaginatorRecyclerAdapter.this
+                                .viewTypes
+                                .add(new ItemFirebasePaginatorAdapter(snapshot));
+
+                        notifyItemInserted(
+                                FirebasePaginatorRecyclerAdapter.this.viewTypes.size() - 1);
+
+                        Log.d(TAG, snapshot.getKey());
+                    }
+                    isLoading = false;
+                } else if (previewsKey.equals(dataSnapshot.getKey())) {
+                                /*
+                                    Has less data than totalDataPerPage
+                                 */
+                    while (!snapshots.isEmpty()) {
+                        final DataSnapshot snapshot = snapshots.removeFirst();
+                        if (snapshot.getKey().equals(previewsKey)) {
+                            continue;
+                        }
+                        FirebasePaginatorRecyclerAdapter.this
+                                .viewTypes
+                                .add(new ItemFirebasePaginatorAdapter(snapshot));
+
+                        notifyItemInserted(
+                                FirebasePaginatorRecyclerAdapter.this.viewTypes.size() - 1);
+
+                        Log.d(TAG, snapshot.getKey());
+                    }
+                    isLoading = false;
+                }
+                Log.d(TAG, "isLoading is: " + isLoading);
+            }//[End-onChildAdded]
+
+            @Override
+            public void onChildChanged(final DataSnapshot dataSnapshot, String s) {
+                final int index = getIndexKey(dataSnapshot.getKey());
+                if (index != -1) {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            viewTypes.set(index, new ItemFirebasePaginatorAdapter(dataSnapshot));
+                            notifyItemChanged(index);
+                        }
+                    },200);
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d(TAG,"ChildRemoved: "+dataSnapshot.getKey());
+                if (!isToRemoveItemRemovedFromFirebase) {
+                    return;
+                }
+                final int index = getIndexKey(dataSnapshot.getKey());
+                if (index != -1) {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            viewTypes.remove(index);
+                            notifyItemRemoved(index);
+                        }
+                    },200);
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                // ignored for now.
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                if (onLoadDone != null) {
+                    onLoadDone.error();
+                }
+            }
+        };
+    }
+
+    private ChildEventListener getListenerForDescendingOrder() {
+        return new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                if (!isLoading && !isToAddNewItemAddedToFirebase) {
+                    return;
+                }
+                viewTypes.add(new ItemFirebasePaginatorAdapter(dataSnapshot));
+                notifyItemInserted(viewTypes.size() - 1);
+                nextKey = dataSnapshot.getKey();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                final int index = getIndexKey(dataSnapshot.getKey());
+                if (index != -1) {
+                    viewTypes.set(index, new ItemFirebasePaginatorAdapter(dataSnapshot));
+                    notifyItemChanged(index);
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                if (!isToRemoveItemRemovedFromFirebase) {
+                    return;
+                }
+                final int index = getIndexKey(dataSnapshot.getKey());
+                if (index != -1) {
+                    viewTypes.remove(index);
+                    notifyItemRemoved(index);
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                //Ignored for now.
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                if (onLoadDone != null) {
+                    onLoadDone.error();
+                }
+            }
+        };
+    }
+
     public interface OnLoadDone {
+        /**
+         * Success, data loaded.
+         */
         void hadSuccessLoad();
 
+        /**
+         * An error occurred.
+         */
         void error();
     }
 
     /**
+     * Portuguese Brazilian:
      * Classe que é responsável inflar a view do usuário.
+     * <p>
+     * Inflate the user view.
      */
     private class UserAdapterDelegate implements AdapterDelegate<List<ViewType>> {
 

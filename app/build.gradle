@@ -26,8 +26,8 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    // compile project(path: ':firebasepaginatorrecycleradapter')
-    compile 'com.santana.isaias:firebasepaginatorrecycleradapter:1.0'
+     compile project(path: ':firebasepaginatorrecycleradapter')
+    //compile 'com.santana.isaias:firebasepaginatorrecycleradapter:1.0'
     compile 'com.android.support:appcompat-v7:26.0.2'
     compile 'com.android.support:design:26.0.2'
     compile 'com.google.firebase:firebase-database:11.2.2'
