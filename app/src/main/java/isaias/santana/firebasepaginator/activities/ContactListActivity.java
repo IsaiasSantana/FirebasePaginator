@@ -29,7 +29,7 @@ public final class ContactListActivity extends MvpAppCompatActivity implements C
 
         contactsListAdapter = presenter.getAdapter(this);
 
-        final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+        final RecyclerView recyclerView = findViewById(R.id.my_recycler_view);
         final LinearLayoutManager llm =
                 new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
 
@@ -60,4 +60,9 @@ public final class ContactListActivity extends MvpAppCompatActivity implements C
         findViewById(R.id.my_progress_bar).setVisibility(View.GONE);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        contactsListAdapter.removeListeners();
+    }
 }

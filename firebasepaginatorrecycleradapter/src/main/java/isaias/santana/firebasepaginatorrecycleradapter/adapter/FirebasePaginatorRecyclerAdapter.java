@@ -47,8 +47,10 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
     /* número total de dados que será buscado no banco por vez */
     private final int totalDataPerPage;
 
+    /* Initial ChildEventListener */
     private final ChildEventListener mChildEventListener;
 
+    /* Guarda as referências de todos os ChildEventListener */
     private final ArrayList<ChildEventListener> mChildEventListeners = new ArrayList<>();
 
     /* Layout que será inflado */
@@ -60,6 +62,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
     /* O ViewHolder que será utilizado para exibir os objetos */
     private Class<VH> viewHolderClass;
 
+    /* Guardas os delegates */
     private ArrayList<ViewType> viewTypes = new ArrayList<>();
 
     /* Gerencia qual tipo de view neste adapater deve ser exibida*/
@@ -83,12 +86,23 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
     /* Flag que indica para remover um item quando esse é removido do Firebase */
     private boolean isToRemoveItemRemovedFromFirebase;
 
+    /* is first call ? */
     private boolean isInitialLoad;
 
+    /* is ascending order */
     private boolean isAscendingOrder;
 
+    /* callback */
     private OnLoadDone onLoadDone;
 
+    /**
+     * Constructor.
+     *
+     * @param modelClass       Your data model class.
+     * @param layout           your layout to inflate the viewHolder
+     * @param viewHolderClass  Your viewHolder class.
+     * @param totalDataPerPage The number of data recovered from database.
+     */
     private FirebasePaginatorRecyclerAdapter(Class<T> modelClass,
                                              @LayoutRes int layout,
                                              Class<VH> viewHolderClass,
@@ -97,15 +111,17 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
         this.layout = layout;
         this.viewHolderClass = viewHolderClass;
 
-        if (totalDataPerPage <= 0)
+        if (totalDataPerPage <= 0) {
             this.totalDataPerPage = DEFAULT_LIMIT_PER_PAGE;
-        else
+        } else {
             this.totalDataPerPage = totalDataPerPage + 1;
+        }
 
         isLoading = false;
         isInitialLoad = true;
         nextKey = "";
         previewsKey = "";
+
         manager = new AdapterDelegatesManager<>();
         manager.addDelegate(new ProgressBarDelegate(), ViewType.VIEW_PROGRESS_BAR_ITEM)
                 .addDelegate(new UserAdapterDelegate(), ViewType.VIEW_DATA_DATA_SNAPSHOT_ITEM);
@@ -194,7 +210,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
 
                             if (dataSnapshot == null) return;
 
-                            Deque<DataSnapshot> snapshots;
+                            final Deque<DataSnapshot> snapshots;
                             snapshots = new ArrayDeque<>(FirebasePaginatorRecyclerAdapter.this.totalDataPerPage);
 
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -210,7 +226,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
 
                             //ASCENDIG order
                             while (!snapshots.isEmpty()) {
-                                DataSnapshot snapshot = snapshots.removeFirst();
+                               final DataSnapshot snapshot = snapshots.removeFirst();
                                 FirebasePaginatorRecyclerAdapter.this
                                         .viewTypes
                                         .add(new ItemFirebasePaginatorAdapter(snapshot));
@@ -228,8 +244,8 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                             }
                         }
                     });   //[End-Listener]
-               queryListener.limitToLast(totalDataPerPage).addChildEventListener(mChildEventListener);
-               mChildEventListeners.add(mChildEventListener);
+            queryListener.limitToLast(this.totalDataPerPage).addChildEventListener(mChildEventListener);
+            mChildEventListeners.add(mChildEventListener);
 
         } else {
             queryListener.limitToFirst(totalDataPerPage).addChildEventListener(mChildEventListener);
@@ -240,28 +256,28 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
 
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public final RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return manager.onCreateViewHolder(parent, viewType);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+    public final void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         manager.onBindViewHolder(viewTypes, position, viewHolder);
     }
 
     @Override
-    public int getItemViewType(int position) {
+    public final int getItemViewType(int position) {
         return manager.getItemViewType(viewTypes, position);
     }
 
 
     @Override
-    public int getItemCount() {
+    public final int getItemCount() {
         return viewTypes.size();
     }
 
     @Override
-    public long getItemId(int position) {
+    public final long getItemId(int position) {
         // http://stackoverflow.com/questions/5100071/whats-the-purpose-of-item-ids-in-android-listview-adapter
         return ((ItemFirebasePaginatorAdapter) viewTypes.get(position))
                 .getDataSnapshot()
@@ -272,7 +288,10 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
     /**
      * Load more data if it exist.
      */
-    public void loadMore() {
+    public final void loadMore() {
+        if (isInitialLoad) {
+            isInitialLoad = false;
+        }
 
         if (!isLoading && !previewsKey.equals(nextKey)) {
 
@@ -283,6 +302,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                 @Override
                 public void run() {
                     //Adiciona o Progress bar
+                    //Add the progress bar.
                     viewTypes.add(new ProgressBarItem());
                     notifyItemInserted(viewTypes.size() - 1);
                 }
@@ -314,14 +334,14 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
     /**
      * Check if is loading more data.
      */
-    public boolean isLoading() {
+    public final boolean isLoading() {
         return isLoading;
     }
 
     /**
      * Remove all childEventListener.
      */
-    public void removeListeners() {
+    public final void removeListeners() {
         for (ChildEventListener cel : mChildEventListeners) {
             if (queryListener != null && cel != null) {
                 queryListener.removeEventListener(cel);
@@ -329,11 +349,11 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
         }
     }
 
-    public void setToAddNewItemAddedToFirebase(boolean toAddNewItemAddedToFirebase) {
+    public final void setToAddNewItemAddedToFirebase(boolean toAddNewItemAddedToFirebase) {
         isToAddNewItemAddedToFirebase = toAddNewItemAddedToFirebase;
     }
 
-    public void setToRemoveItemRemovedFromFirebase(boolean toRemoveItemRemovedFromFirebase) {
+    public final void setToRemoveItemRemovedFromFirebase(boolean toRemoveItemRemovedFromFirebase) {
         isToRemoveItemRemovedFromFirebase = toRemoveItemRemovedFromFirebase;
     }
 
@@ -355,7 +375,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
      *
      * @param onLoadDone the listener to check.
      */
-    public void setOnLoadDone(OnLoadDone onLoadDone) {
+    public final void setOnLoadDone(OnLoadDone onLoadDone) {
         if (onLoadDone == null)
             throw new NullPointerException("OnLoadDone não pode ser nulo.");
 
@@ -383,16 +403,13 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
             public void onChildAdded(final DataSnapshot dataSnapshot, String s) {
                 Log.d(TAG, "getListenerForAscendingOrder() -> isToAdd: out " + dataSnapshot.getKey());
                 Log.d(TAG, "isLoading: " + isLoading + " isToAddItemAddedToFirebase: " + isToAddNewItemAddedToFirebase);
-               if (!isLoading && isToAddNewItemAddedToFirebase) {
+                if (isInitialLoad) {
+                    return;
+                }
+                if (!isLoading && isToAddNewItemAddedToFirebase) {
                     Log.d(TAG, "isToAdd inside: " + dataSnapshot.getKey());
-                   new Handler().post(new Runnable() {
-                       @Override
-                       public void run() {
-                           viewTypes.add(new ItemFirebasePaginatorAdapter(dataSnapshot));
-                           notifyItemInserted(viewTypes.size() - 1);
-                       }
-                   });
-
+                    viewTypes.add(new ItemFirebasePaginatorAdapter(dataSnapshot));
+                    notifyItemInserted(viewTypes.size() - 1);
                     return;
                 }
 
@@ -457,13 +474,13 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                             viewTypes.set(index, new ItemFirebasePaginatorAdapter(dataSnapshot));
                             notifyItemChanged(index);
                         }
-                    },200);
+                    }, 200);
                 }
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-                Log.d(TAG,"ChildRemoved: "+dataSnapshot.getKey());
+                Log.d(TAG, "ChildRemoved: " + dataSnapshot.getKey());
                 if (!isToRemoveItemRemovedFromFirebase) {
                     return;
                 }
@@ -475,7 +492,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                             viewTypes.remove(index);
                             notifyItemRemoved(index);
                         }
-                    },200);
+                    }, 200);
                 }
             }
 
