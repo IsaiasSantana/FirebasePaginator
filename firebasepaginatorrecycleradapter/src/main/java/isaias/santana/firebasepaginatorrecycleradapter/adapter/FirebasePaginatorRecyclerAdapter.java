@@ -226,7 +226,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
 
                             //ASCENDIG order
                             while (!snapshots.isEmpty()) {
-                               final DataSnapshot snapshot = snapshots.removeFirst();
+                                final DataSnapshot snapshot = snapshots.removeFirst();
                                 FirebasePaginatorRecyclerAdapter.this
                                         .viewTypes
                                         .add(new ItemFirebasePaginatorAdapter(snapshot));
@@ -442,9 +442,24 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
                     }
                     isLoading = false;
                 } else if (previewsKey.equals(dataSnapshot.getKey())) {
-                                /*
-                                    Has less data than totalDataPerPage
-                                 */
+                    /*
+                        Has less data than totalDataPerPage
+                        for instance:
+                        totalDataPerPage = 5
+                        data:
+                        key:value,
+                        a:1
+                        b:2
+                        c:3
+                        d:4
+                        e:5
+                        f:6
+                        nextKey = b;
+                        previewsKey = null;
+                        next call:
+                        previewsKey = b;
+                        Firebase return a and b where b == previewsKey, end of data so take a and discard b.
+                     */
                     while (!snapshots.isEmpty()) {
                         final DataSnapshot snapshot = snapshots.removeFirst();
                         if (snapshot.getKey().equals(previewsKey)) {
@@ -512,14 +527,35 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
 
     private ChildEventListener getListenerForDescendingOrder() {
         return new ChildEventListener() {
+            int count = 0;
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            public synchronized void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 if (!isLoading && !isToAddNewItemAddedToFirebase) {
                     return;
                 }
-                viewTypes.add(new ItemFirebasePaginatorAdapter(dataSnapshot));
-                notifyItemInserted(viewTypes.size() - 1);
                 nextKey = dataSnapshot.getKey();
+
+                if (count == 0) {
+                    final int lastPosition = viewTypes.size() - 1;
+                    viewTypes.remove(lastPosition);
+                    notifyItemRemoved(lastPosition);
+                    count += 1;
+                    if (onLoadDone != null) {
+                        onLoadDone.hadSuccessLoad();
+                    }
+                }
+
+                if (!dataSnapshot.getKey().equals(previewsKey)) {
+                    viewTypes.add(new ItemFirebasePaginatorAdapter(dataSnapshot));
+                    notifyItemInserted(viewTypes.size() - 1);
+                    count += 1;
+                }
+
+                if (count == totalDataPerPage) {
+                    isLoading = false;
+                } else if (previewsKey.equals(nextKey)) {
+                    isLoading = false;
+                }
             }
 
             @Override
@@ -532,7 +568,7 @@ public abstract class FirebasePaginatorRecyclerAdapter<T, VH extends RecyclerVie
             }
 
             @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
+            public synchronized void onChildRemoved(DataSnapshot dataSnapshot) {
                 if (!isToRemoveItemRemovedFromFirebase) {
                     return;
                 }

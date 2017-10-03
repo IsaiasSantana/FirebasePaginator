@@ -33,7 +33,7 @@ public final class ContactsListAdapter extends FirebasePaginatorRecyclerAdapter<
                                Query query,
                                int totalDataPerPage,
                                Context context) {
-        super(modelClass, layout, viewHolderClass, query, totalDataPerPage,true);
+        super(modelClass, layout, viewHolderClass, query, totalDataPerPage,false);
         this.context = context;
         super.setToAddNewItemAddedToFirebase(true);
     }
